@@ -10,6 +10,8 @@ env:
   DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: PlaywrightInAzureFunctionTemplate
   DOTNET_CORE_VERSION_INPROC: 3.1.x
+  # added for playwright: download playwright browser to our app's folder, not ~/.cache/ms-playwright
+  PLAYWRIGHT_BROWSERS_PATH: PlaywrightInAzureFunctionTemplate/publish/.playwright/ms-playwright
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -30,9 +32,30 @@ jobs:
       run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+    
+      # added for playwright
+    - name: Playwright install
+      shell: bash
+      run: |
+        dotnet tool install --global Microsoft.Playwright.CLI
+        playwright install chromium
+    - name: 'Login via Azure CLI'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
     - name: Deploy to Azure Function App
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.PlaywrightInAzureFunctionTemplate_684e }}
+        # below line commented out for playwright (so we can use RBAC deployment instead)
+        # publish-profile: ${{ secrets.PlaywrightInAzureFunctionTemplate_684e }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+    
+    # added for playwright
+    - name: App Settings Update
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        mask-inputs: false
+        app-settings-json: '[{ "name": "WEBSITE_MOUNT_ENABLED", "value": 1, "slotSetting": false }, { "name": "FUNCTIONS_WORKER_RUNTIME", "value": "dotnet-isolated", "slotSetting": false }, { "name": "PLAYWRIGHT_BROWSERS_PATH", "value": "/home/site/wwwroot/.playwright/ms-playwright", "slotSetting": false }]'
