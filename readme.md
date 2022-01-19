@@ -12,12 +12,11 @@ This requires a few things to work:
 
 ## Installation
 
-* Just clone this repo, then c
+* Clone this repo
 * Create your own `AZURE_CREDENTIALS` secret ([instructions here](https://github.com/marketplace/actions/azure-app-service-settings#configure-github-secrets-with-azure-credentials-app-settings-and-connection-strings))
 * Update the github actions to reference your own app name
 
 ## Steps to recreate manually
-
 
 1. In Visual Studio (for windows), add new Isolated Function
 2. Push to new github repo
