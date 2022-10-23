@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core Function App to Azure functions app
+name: Build and deploy .NET isolated Function App with Playwright to Azure functions app
 on:
   push:
     branches:
