@@ -9,6 +9,8 @@ This requires a few things to work:
 * Deploy via a Service Principal (rather than zip-deploy publish profile) - this is so that the browser's executable permission bit is kept during deployment
 * Github Actions to build the project, and include the browser in the deployment
 
+**Note:** Last known working Playwright release: v1.17.3. Currently investigating what has changed since then.
+
 ## Installation
 
 * Create template from this repo
