@@ -20,6 +20,8 @@ This requires a few things to work:
 Add Env variable:
 
 ```yaml
+  # changed '/published' to '/publish' on this line
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: <NameOfMyApp>/publish
   # download playwright browser to the folder to be deployed, not ~/.cache/ms-playwright
   PLAYWRIGHT_BROWSERS_PATH: <NameOfMyApp>/publish/.playwright/ms-playwright
 ```
@@ -27,16 +29,37 @@ Add Env variable:
 after `dotnet publish`, add playwright install:
 
 ```yaml
+      # added for playwright. tar the directory as this keeps permission bits when publishing artifacts
     - name: Playwright install
       shell: bash
       run: |
         dotnet tool install --global Microsoft.Playwright.CLI
         playwright install chromium
+        tar -cvf publish_directory.tar "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
 ```
 
-before `Deploy to Azure Function App`, add AZ Login:
+update `Publish Artifacts` to:
 
 ```yaml
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: functionapp
+        path: publish_directory.tar
+```
+
+In the `deploy` section, before `Deploy to Azure Function App`, add:
+
+```yaml
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v2
+      with:
+        name: functionapp
+    - name: Restore artifact with permissions
+      shell: bash
+      run: |
+        mkdir --parents ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        tar xvf publish_directory.tar
     - name: 'Login via Azure CLI'
       uses: azure/login@v1
       with:
