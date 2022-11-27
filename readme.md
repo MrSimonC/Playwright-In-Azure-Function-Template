@@ -5,11 +5,9 @@ A template repo to show you how to set up playwright .net in an azure function.
 This requires a few things to work:
 
 * Linux consumption plan
-* .net 6.0 isolated azure function
+* .net 6.0 isolated azure function (.net 7 update coming soon)
 * Deploy via a Service Principal (rather than zip-deploy publish profile) - this is so that the browser's executable permission bit is kept during deployment
 * Github Actions to build the project, and include the browser in the deployment
-
-**Note:** Last known working Playwright release: v1.18.1. It seems if you upgrade the version, doesn't publish to the published folder from v1.19.0. I've rasied [a bug](https://github.com/microsoft/playwright-dotnet/issues/2354) with the team ...
 
 ## Installation
 
@@ -22,31 +20,35 @@ This requires a few things to work:
 Add Env variable:
 
 ```yaml
-  # added for playwright: download playwright browser to our app's folder, not ~/.cache/ms-playwright
+  # download playwright browser to the folder to be deployed, not ~/.cache/ms-playwright
   PLAYWRIGHT_BROWSERS_PATH: <NameOfMyApp>/publish/.playwright/ms-playwright
 ```
 
-before deployment, add playwright install:
+after `dotnet publish`, add playwright install:
 
 ```yaml
-      # added for playwright
     - name: Playwright install
       shell: bash
       run: |
         dotnet tool install --global Microsoft.Playwright.CLI
         playwright install chromium
+```
+
+before `Deploy to Azure Function App`, add AZ Login:
+
+```yaml
     - name: 'Login via Azure CLI'
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_RBAC_CREDENTIALS }}
 ```
 
-To make the `Azure/functions-action` deploy using a service principal, find `publish-profile: ${{ secrets....` and comment it out/remove it.
+To make the `Azure/functions-action` deploy using a service principal, find `publish-profile: ${{ secrets....` and remove it.
 
 Then, at the end, add:
 
 ```yaml
-# added for playwright
+    # added for playwright
     - name: App Settings Update
       uses: azure/appservice-settings@v1
       with:
