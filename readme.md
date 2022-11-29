@@ -78,4 +78,7 @@ Then, at the end, add:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         mask-inputs: false
         app-settings-json: '[{ "name": "WEBSITE_MOUNT_ENABLED", "value": 1, "slotSetting": false }, { "name": "FUNCTIONS_WORKER_RUNTIME", "value": "dotnet-isolated", "slotSetting": false }, { "name": "PLAYWRIGHT_BROWSERS_PATH", "value": "/home/site/wwwroot/.playwright/ms-playwright", "slotSetting": false }]'
+    - uses: geekyeggo/delete-artifact@v2
+      with:
+          name: functionapp
 ```
